@@ -1,0 +1,9 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@1,2&display=swap');
+@import 'tailwindcss';
+
+:root {
+    font-family: "Satoshi Variable";
+    font-weight: 500;
+    font-size: 1.125rem;
+    font-variant-numeric: tabular-nums;
+}
