@@ -2,9 +2,6 @@ import { UPSTASH_REDIS_REST_TOKEN, UPSTASH_REDIS_REST_URL } from "$env/static/pr
 import { fail, json } from '@sveltejs/kit';
 import { Redis } from '@upstash/redis';
 
-
-console.log(UPSTASH_REDIS_REST_TOKEN)
-console.log(UPSTASH_REDIS_REST_URL)
 // Initialize Redis
 const redis = new Redis({
     url: UPSTASH_REDIS_REST_URL,
@@ -21,8 +18,15 @@ export async function load() {
             }
         }
 
-        const sessions = await redis.mget(...keys);
-
+        const values = await redis.mget(...keys);
+        
+        const sessions = keys.map((key, index) => {
+            return {
+                key: key,
+                data: values[index]
+            }
+        })
+        
         return {
             sessions: sessions
         }
@@ -45,13 +49,6 @@ export const actions = {
         const rating = formData.get("rating");
         const duration = formData.get("duration");
 
-        console.log({
-            "date": date,
-            "subject": subject,
-            "rating": rating,
-            "duration": duration
-        })
-
         try {
             const id = `session:${crypto.randomUUID()}`
 
@@ -71,6 +68,25 @@ export const actions = {
             return fail(500, {
                 error: "500 error"
             })
+        }
+    },
+    deleteSession: async ({request}) => {
+        const formData = await request.formData();
+
+        const id = formData.get("id");
+
+        try {
+            await redis.del(id);
+
+            return {
+                success: true
+            }
+        } catch (err) {
+            console.error("Error deleting key:", err);
+
+            return {
+                success: false
+            }
         }
     }
 }
