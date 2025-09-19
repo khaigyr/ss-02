@@ -6,6 +6,7 @@
 </script>
 
 <svelte:head>
+	<link href="https://api.fontshare.com/v2/css?f[]=satoshi@1,2&display=swap" rel="stylesheet">
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
