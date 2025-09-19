@@ -22,5 +22,9 @@
 		"svelte": "^5.0.0",
 		"tailwindcss": "^4.0.0",
 		"vite": "^7.0.4"
+	},
+	"dependencies": {
+		"@upstash/redis": "^1.35.3",
+		"vercel": "^48.0.3"
 	}
 }
