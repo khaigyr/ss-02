@@ -10,7 +10,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="max-w-[800px] mx-auto p-6 flex flex-col gap-12">
+<div class="max-w-[940px] mx-auto p-6 flex flex-col gap-8">
 {@render children?.()}
 
 </div>

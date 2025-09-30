@@ -8,39 +8,37 @@ const redis = new Redis({
     token: UPSTASH_REDIS_REST_TOKEN
 });
 
-export async function load() {
-    try {
-        const keys = await redis.keys('session:*')
+export const actions = {
+    loadSessions: async () => {
+        try {
+            const keys = await redis.keys('session:*')
 
-        if (keys.length === 0) {
+            if (keys.length === 0) {
+                return {
+                    sessions: []
+                }
+            }
+
+            const values = await redis.mget(...keys);
+
+            const sessions = keys.map((key, index) => {
+                return {
+                    key: key,
+                    ...values[index]
+                }
+            })
+
+            return {
+                sessions: sessions
+            }
+        } catch (err) {
+            console.error("Error fetching data from redis:", err)
+
             return {
                 sessions: []
             }
         }
-
-        const values = await redis.mget(...keys);
-        
-        const sessions = keys.map((key, index) => {
-            return {
-                key: key,
-                data: values[index]
-            }
-        })
-        
-        return {
-            sessions: sessions
-        }
-    } catch (err) {
-        console.error("Error fetching data from redis:", err)
-
-        return {
-            sessions: []
-        }
-    }
-}
-
-
-export const actions = {
+    },
     saveSession: async ({ request }) => {
         const formData = await request.formData();
 
@@ -61,8 +59,8 @@ export const actions = {
                 }
             ))
 
-            return {success: true}
-        } catch(err) {
+            return { success: true }
+        } catch (err) {
             console.error("Error saving to redis:", err)
 
             return fail(500, {
@@ -70,7 +68,7 @@ export const actions = {
             })
         }
     },
-    deleteSession: async ({request}) => {
+    deleteSession: async ({ request }) => {
         const formData = await request.formData();
 
         const id = formData.get("id");

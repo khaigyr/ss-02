@@ -1,6 +1,5 @@
 <script>
-	let { data } = $props();
-	let { sessions } = data;
+	let { form } = $props();
 
 	let status = $state('stopped');
 
@@ -10,7 +9,8 @@
 	let subject = $state(),
 		rating = $state();
 
-	let mins = $derived(Math.floor(elapsed / 1000 / 60) % 60),
+	let hrs = $derived(Math.floor(elapsed / 1000 / 60 / 60)),
+		mins = $derived(Math.floor(elapsed / 1000 / 60) % 60),
 		secs = $derived(Math.floor(elapsed / 1000) % 60);
 
 	let interval;
@@ -42,6 +42,14 @@
 	}
 </script>
 
+<div class="bg-blue-200 p-2 text-center">
+	<p>
+		Methods exams in
+		<span>{Math.ceil((new Date(2025, 10, 5) - new Date()) / (1000 * 60 * 60 * 24))}</span> /
+		<span>{Math.ceil((new Date(2025, 10, 6) - new Date()) / (1000 * 60 * 60 * 24))}</span> days
+	</p>
+</div>
+
 {#if status === 'stopped'}
 	<button
 		onclick={start}
@@ -65,11 +73,16 @@
 		</div>
 	</button>
 {:else if status === 'running' || status === 'paused'}
-	<div class="grid h-[90dvh] place-items-center rounded-2xl bg-neutral-900 text-neutral-100">
+	<div class="grid h-[80dvh] place-items-center rounded-2xl bg-neutral-900 text-neutral-100">
 		<div class="flex flex-col gap-8">
-			<p class="text-center text-6xl font-bold">
-				{mins.toString().padStart(2, '0')}:{secs.toString().padStart(2, '0')}
-			</p>
+			<div class="text-center">
+				<p class="text-6xl font-bold">
+					{hrs.toString().padStart(2, '0')}
+					: {mins.toString().padStart(2, '0')}
+					: {secs.toString().padStart(2, '0')}
+				</p>
+				<small class="mt-4 block text-neutral-400">hours / mins / secs</small>
+			</div>
 			<div class="flex justify-center gap-4">
 				<button class="flex items-center gap-2" title="stop" onclick={stop}>
 					<svg
@@ -118,12 +131,17 @@
 	<form
 		method="post"
 		action="?/saveSession"
-		class="grid h-[90dvh] place-items-center rounded-2xl bg-neutral-900 p-6 text-neutral-100"
+		class="grid h-[80dvh] place-items-center rounded-2xl bg-neutral-900 p-6 text-neutral-100"
 	>
 		<div class="flex flex-col gap-12">
 			<div class="flex flex-col gap-2 text-center">
 				<p class="text-neutral-400">You studied for</p>
-				<p class="text-4xl font-bold">{Math.floor(duration / 1000 / 60)} minutes</p>
+				<p class="text-4xl font-bold">
+					{hrs.toString().padStart(2, '0')}
+					: {mins.toString().padStart(2, '0')}
+					: {secs.toString().padStart(2, '0')}
+				</p>
+				<small class="mb-4 block text-neutral-400">hours / mins / secs</small>
 			</div>
 			<div class="flex flex-col gap-4">
 				<label class="flex flex-col gap-2">
@@ -186,62 +204,66 @@
 	</form>
 {/if}
 
-<div>
-	<p>
-		<span class="text-neutral-400">Days till Methods Exam 1:</span>
-		<span>{Math.ceil((new Date(2025, 10, 5) - new Date()) / (1000 * 60 * 60 * 24))}</span>
-	</p>
-	<p>
-		<span class="text-neutral-400">Days till Methods Exam 2:</span>
-		<span>{Math.ceil((new Date(2025, 10, 6) - new Date()) / (1000 * 60 * 60 * 24))}</span>
-	</p>
-</div>
-
-<div class="flex flex-col gap-4">
-	<p class="text-xl font-bold">Previous study session</p>
-	<div class="overflow-x-auto">
-		<div class="min-w-max">
-			<div class="grid grid-cols-7 border-b border-neutral-200">
-				<p class="col-span-2 px-4 py-2">Date</p>
-				<p class="col-span-2 px-4 py-2">Subject</p>
-				<p class="px-4 py-2">Duration</p>
-				<p class="px-4 py-2">Rating</p>
-				<p class="px-4 py-2 text-center">{' '}</p>
-			</div>
-
-			{#each sessions as s}
-				<div
-					class="grid grid-cols-7 items-center divide-x divide-neutral-200 border-b border-neutral-200"
-				>
-					<p class="col-span-2 px-4 py-2">{s.data.date}</p>
-					<p class="col-span-2 px-4 py-2">{s.data.subject}</p>
-					<p class="px-4 py-2">{Math.floor(s.data.duration / 1000 / 60) % 60} mins</p>
-					<p class="px-4 py-2">{s.data.rating}/20</p>
-					<div class="px-4 py-2 text-center">
-						<form action="?/deleteSession" method="post">
-							<input type="hidden" name="id" value={s.key} />
-							<button
-								aria-label="delete"
-								class="cursor-pointer text-red-500 hover:underline"
-								title="Delete session"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 16 16"
-									fill="currentColor"
-									class="size-4"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"
-										clip-rule="evenodd"
-									/>
-								</svg></button
-							>
-						</form>
-					</div>
+{#if !form}
+	<form method="post" action="?/loadSessions">
+		<button>Load previous sessions</button>
+	</form>
+{:else}
+	<div class="flex flex-col gap-4">
+		<p class="text-xl font-bold">Previous study session</p>
+		<div class="overflow-x-auto">
+			<div class="min-w-max">
+				<div class="grid grid-cols-8 border-b border-neutral-200 text-neutral-500">
+					<p class="col-span-2 px-4 py-2">Date</p>
+					<p class="col-span-2 px-4 py-2">Subject</p>
+					<p class="col-span-2 px-4 py-2 text-right">Duration</p>
+					<p class="px-4 py-2 text-right">Rating</p>
+					<p class="px-4 py-2 text-center">{' '}</p>
 				</div>
-			{/each}
+
+				{#each form.sessions as s}
+					<div
+						class="grid grid-cols-8 items-center divide-x divide-neutral-200 border-b border-neutral-200 hover:bg-neutral-50"
+					>
+						<p class="col-span-2 px-4 py-2 text-neutral-500">{s.date}</p>
+						<p class="col-span-2 px-4 py-2">{s.subject}</p>
+						<p class="col-span-2 px-4 py-2 text-right">
+							{Math.floor(s.duration / 1000 / 60 / 60)
+								.toString()
+								.padStart(2, '0')} : {(Math.floor(s.duration / 1000 / 60) % 60)
+								.toString()
+								.padStart(2, '0')} : {(Math.floor(s.duration / 1000) % 60)
+								.toString()
+								.padStart(2, '0')}
+						</p>
+						<!-- <p class="px-4 py-2">{Math.floor(s.data.duration / 1000 / 60) % 60} mins</p> -->
+						<p class="px-4 py-2 text-right">{s.rating}<span class="text-neutral-500">/20</span></p>
+						<div class="px-4 py-2 text-center">
+							<form action="?/deleteSession" method="post">
+								<input type="hidden" name="id" value={s.key} />
+								<button
+									aria-label="delete"
+									class="cursor-pointer text-red-500 hover:underline"
+									title="Delete session"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 16 16"
+										fill="currentColor"
+										class="size-4"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"
+											clip-rule="evenodd"
+										/>
+									</svg></button
+								>
+							</form>
+						</div>
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
